@@ -18,7 +18,7 @@ class Window(QtWidgets.QMainWindow):
         super(Window, self).__init__()
 
         # startx, starty, width, height
-        self.setGeometry(50, 50, 800, 700)
+        self.setGeometry(50, 50, 1000, 950)
         self.setWindowTitle('Unnamed Character')
         #self.setWindowIcon(QtGui.QIcon(''))  # set icon
         self.setup()
@@ -30,16 +30,24 @@ class Window(QtWidgets.QMainWindow):
 
         Variables relevant outside this function (anything besides static labels):
         == For getting input:
-        - self.attribute_score_input: textbox input for attribute scores
+        - self.attribute_score_input: text box input for attribute scores
         - self.prof_textbox: input for proficiency bonus
+
         == For giving output:
         - self.attribute_mod_labels[i]: labels giving attribute modifiers
         - self.save_mod_labels: labels for save modifiers
+        - self.skill_mod_labels: labels for skill modifiers
+
         == Variables for useful numbers:
+        - self.attribute_names: names of attributes in character sheet order
         - self.attribute_mods: integer list of modifiers for attributes
         - self.proficiency: integer proficiency bonus
         - self.save_prof: bool array indicating which saves have proficiency
         - self.save_mods: integer array of actual saving throw modifiers
+        - self.skill_names: names of skills in alphabetical order
+        - self.skill_types: index of relevant attribute for the skills
+        - self.skill_prof: bool array indicating which skills have proficiency
+        - self.skill_mods: integer array of actual skill modifiers
         """
 
         # ---------------------------------------------------------------------
@@ -48,6 +56,7 @@ class Window(QtWidgets.QMainWindow):
         # Setup attribute buttons
         self.attribute_names = ['Strength', 'Dexterity', 'Constitution',
                                 'Intelligence', 'Wisdom', 'Charisma']
+        self.attribute_short = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']
 
         self.attribute_mod_labels = []
         self.attribute_mods = [0, 0, 0, 0, 0, 0]
@@ -141,6 +150,48 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         # Skills Section
         # ---------------------------------------------------------------------
+        self.skill_names = ['Acrobatics', 'Animal Handling', 'Arcana',
+                            'Athletics', 'Deception', 'History', 'Insight',
+                            'Intimidation', 'Investigation', 'Medicine',
+                            'Nature', 'Perception', 'Performance',
+                            'Persuasion', 'Religion', 'Sleight of Hand',
+                            'Stealth', 'Survival']
+        self.skill_type = [1, 4, 3, 0, 5, 3, 4, 5, 3,
+                           4, 3, 4, 5, 5, 3, 1, 1, 4]
+
+        num_skills = len(self.skill_names)
+
+        self.skill_mod_labels = []
+        self.skill_mods = [0]*num_skills
+        self.skill_prof = [False]*num_skills  # all buttons start off, flip when toggled
+
+        for i, name in enumerate(self.skill_names):
+            # Create button for rolling
+            short_att = self.attribute_short[self.skill_type[i]]
+            btn = QtWidgets.QPushButton('{} ({})'.format(name, short_att), self)
+
+            # create label showing modifier for this save
+            label = QtWidgets.QLabel('+0', self)
+            self.skill_mod_labels.append(label)
+
+            # create checkbox button for this save
+            checkbox = QtWidgets.QCheckBox(self)
+
+            # Move and resize everything
+            label.resize(26, 30)
+            label.move(175, i*35+300)
+
+            checkbox.resize(26, 30)
+            checkbox.move(155, i*35+300)
+
+            btn.resize(200, 30)
+            btn.move(200, i*35+300)
+
+            # Connect checkbox button to proficiency
+            checkbox.stateChanged.connect(partial(self.set_skill_prof, i))
+
+            # Connect the skill roll button to the skill roll function
+            btn.clicked.connect(partial(self.skill_roll, i))
 
         self.show()
 
@@ -161,6 +212,19 @@ class Window(QtWidgets.QMainWindow):
         mod = self.save_mods[i]
 
         print('{} saving roll'.format(self.attribute_names[i]))
+
+        r1 = d(20)
+        r2 = d(20)
+
+        print('Rolls:', r1, r2)
+        print('Mod:', mod)
+
+        print(r1+mod, r2+mod)
+
+    def skill_roll(self, i):
+        mod = self.skill_mods[i]
+        short_att = self.attribute_short[self.skill_type[i]]
+        print('{} ({}) roll'.format(self.skill_names[i], short_att))
 
         r1 = d(20)
         r2 = d(20)
@@ -194,6 +258,10 @@ class Window(QtWidgets.QMainWindow):
         self.save_prof[i] = not self.save_prof[i]
         self.recalculate()
 
+    def set_skill_prof(self, i):
+        self.skill_prof[i] = not self.skill_prof[i]
+        self.recalculate()
+
     def recalculate(self):
         """
         Recalculates modifiers for saves and skills
@@ -204,6 +272,14 @@ class Window(QtWidgets.QMainWindow):
             if self.save_prof[i]:
                 mod += self.proficiency
             self.save_mods[i] = mod
+
+        # Skills
+        for i in range(len(self.skill_names)):
+            att_ind = self.skill_type[i]
+            mod = self.attribute_mods[att_ind]
+            if self.skill_prof[i]:
+                mod += self.proficiency
+            self.skill_mods[i] = mod
 
         self.fix_labels()
 
@@ -224,6 +300,15 @@ class Window(QtWidgets.QMainWindow):
             else:
                 s = str(mod)
             self.save_mod_labels[i].setText(s)
+
+        for i in range(len(self.skill_names)):
+            # skills
+            mod = self.skill_mods[i]
+            if mod >= 0:
+                s = '+'+str(mod)
+            else:
+                s = str(mod)
+            self.skill_mod_labels[i].setText(s)
 
 
 def main():
