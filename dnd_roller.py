@@ -24,11 +24,11 @@ def roll_with(advantage=False, disadvantage=False, verbose=False):
 
 class Character:
     def __init__(self):
-        # variables: prof, str, dex, con, int, wis, chr
+        # variables: prof, str, dex, con, int, wis, cha
         self.score_full_names = ['proficiency', 'strength', 'dexterity',
                                  'constitution', 'intelligence', 'wisdom',
                                  'charisma']
-        self.score_names = ['prof', 'str', 'dex', 'con', 'int', 'wis', 'chr']
+        self.score_names = ['prof', 'str', 'dex', 'con', 'int', 'wis', 'cha']
 
         self.shorthand = dict()
         for i in range(len(self.score_full_names)):
@@ -40,9 +40,9 @@ class Character:
         con_base = ['constitution', 'save(constitution)']
         int_base = ['intelligence', 'save(intelligence)' 'arcana', 'history', 'investigation', 'nature', 'religion']
         wis_base = ['wisdom', 'save(wisdom)', 'animal', 'handling', 'insight', 'medicine', 'perception', 'survival']
-        chr_base = ['charisma', 'save(charisma)', 'deception', 'intimidation', 'performance', 'persuasion']
+        cha_base = ['charisma', 'save(charisma)', 'deception', 'intimidation', 'performance', 'persuasion']
         # Note this is in the same order as score_names
-        temp_skills = [str_base, dex_base, con_base, int_base, wis_base, chr_base]
+        temp_skills = [str_base, dex_base, con_base, int_base, wis_base, cha_base]
 
         # Each skill will be a key whose value is its base stat.
         self.skills = dict()
