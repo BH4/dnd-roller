@@ -34,28 +34,29 @@ class Window(QtWidgets.QMainWindow):
         - self.prof_textbox: input for proficiency bonus
         == For giving output:
         - self.attribute_mod_labels[i]: labels giving attribute modifiers
+        - self.save_mod_labels: labels for save modifiers
         == Variables for useful numbers:
         - self.attribute_mods: integer list of modifiers for attributes
         - self.proficiency: integer proficiency bonus
+        - self.save_prof: bool array indicating which saves have proficiency
+        - self.save_mods: integer array of actual saving throw modifiers
         """
 
         # ---------------------------------------------------------------------
         # Attribute Section
         # ---------------------------------------------------------------------
         # Setup attribute buttons
-        str_btn = QtWidgets.QPushButton('Strength', self)
-        dex_btn = QtWidgets.QPushButton('Dexterity', self)
-        con_btn = QtWidgets.QPushButton('Constitution', self)
-        int_btn = QtWidgets.QPushButton('Intelligence', self)
-        wis_btn = QtWidgets.QPushButton('Wisdom', self)
-        cha_btn = QtWidgets.QPushButton('Charisma', self)
+        self.attribute_names = ['Strength', 'Dexterity', 'Constitution',
+                                'Intelligence', 'Wisdom', 'Charisma']
 
-        self.attribute_btns = [str_btn, dex_btn, con_btn, int_btn, wis_btn, cha_btn]
         self.attribute_mod_labels = []
         self.attribute_mods = [0, 0, 0, 0, 0, 0]
         self.attribute_score_input = []
 
-        for i, btn in enumerate(self.attribute_btns):
+        for i, name in enumerate(self.attribute_names):
+            # Create button for rolling
+            btn = QtWidgets.QPushButton(name, self)
+
             # Create a text box for the attribute score
             textbox = QtWidgets.QLineEdit(self)
             textbox.setText('10')
@@ -95,10 +96,10 @@ class Window(QtWidgets.QMainWindow):
 
         # Move and resize proficiency things
         prof_label.resize(125, 20)
-        prof_label.move(180, 40)
+        prof_label.move(180, 20)
 
         self.prof_textbox.resize(26, 20)
-        self.prof_textbox.move(150, 40)
+        self.prof_textbox.move(150, 20)
 
         # Connect textbox to self.proficiency
         self.prof_textbox.editingFinished.connect(self.set_prof)
@@ -106,7 +107,36 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         # Saving Throw Section
         # ---------------------------------------------------------------------
+        self.save_mod_labels = []
+        self.save_mods = [0]*6
+        self.save_prof = [False]*6  # all buttons start off, flip when toggled
 
+        for i, name in enumerate(self.attribute_names):
+            # Create button for rolling
+            btn = QtWidgets.QPushButton(name, self)
+
+            # create label showing modifier for this save
+            label = QtWidgets.QLabel('+0', self)
+            self.save_mod_labels.append(label)
+
+            # create checkbox button for this save
+            checkbox = QtWidgets.QCheckBox(self)
+
+            # Move and resize everything
+            label.resize(26, 30)
+            label.move(175, i*35+50)
+
+            checkbox.resize(26, 30)
+            checkbox.move(155, i*35+50)
+
+            btn.resize(100, 30)
+            btn.move(200, i*35+50)
+
+            # Connect checkbox button to proficiency
+            checkbox.stateChanged.connect(partial(self.set_save_prof, i))
+
+            # Connect the saving roll button to the saving roll function
+            btn.clicked.connect(partial(self.saving_roll, i))
 
         # ---------------------------------------------------------------------
         # Skills Section
@@ -116,6 +146,21 @@ class Window(QtWidgets.QMainWindow):
 
     def attribute_roll(self, i):
         mod = self.attribute_mods[i]
+
+        print('Rolling for {}'.format(self.attribute_names[i]))
+
+        r1 = d(20)
+        r2 = d(20)
+
+        print('Rolls:', r1, r2)
+        print('Mod:', mod)
+
+        print(r1+mod, r2+mod)
+
+    def saving_roll(self, i):
+        mod = self.save_mods[i]
+
+        print('{} saving roll'.format(self.attribute_names[i]))
 
         r1 = d(20)
         r2 = d(20)
@@ -134,12 +179,7 @@ class Window(QtWidgets.QMainWindow):
 
             self.attribute_mods[i] = mod
 
-            if mod >= 0:
-                s = '+'+str(mod)
-            else:
-                s = str(mod)
-
-            self.attribute_mod_labels[i].setText(s)
+            self.recalculate()
 
     def set_prof(self):
         textbox_value = self.prof_textbox.text()
@@ -147,6 +187,43 @@ class Window(QtWidgets.QMainWindow):
         if textbox_value.isdigit():
             prof = int(textbox_value)
             self.proficiency = prof
+
+            self.recalculate()
+
+    def set_save_prof(self, i):
+        self.save_prof[i] = not self.save_prof[i]
+        self.recalculate()
+
+    def recalculate(self):
+        """
+        Recalculates modifiers for saves and skills
+        """
+        # Saves
+        for i in range(6):
+            mod = self.attribute_mods[i]
+            if self.save_prof[i]:
+                mod += self.proficiency
+            self.save_mods[i] = mod
+
+        self.fix_labels()
+
+    def fix_labels(self):
+        for i in range(6):
+            # attributes
+            mod = self.attribute_mods[i]
+            if mod >= 0:
+                s = '+'+str(mod)
+            else:
+                s = str(mod)
+            self.attribute_mod_labels[i].setText(s)
+
+            # saves
+            mod = self.save_mods[i]
+            if mod >= 0:
+                s = '+'+str(mod)
+            else:
+                s = str(mod)
+            self.save_mod_labels[i].setText(s)
 
 
 def main():
