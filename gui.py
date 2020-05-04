@@ -19,7 +19,7 @@ class Window(QtWidgets.QMainWindow):
 
         # startx, starty, width, height
         self.setGeometry(50, 50, 800, 700)
-        self.setWindowTitle("title")
+        self.setWindowTitle('Unnamed Character')
         #self.setWindowIcon(QtGui.QIcon(''))  # set icon
         self.setup()
 
@@ -69,7 +69,7 @@ class Window(QtWidgets.QMainWindow):
         self.show()
 
     def attribute_roll(self, i):
-        mod = int(self.attribute_mod_labels[i].text())
+        mod = self.attribute_mods[i]
 
         r1 = d(20)
         r2 = d(20)
@@ -85,6 +85,9 @@ class Window(QtWidgets.QMainWindow):
         if textbox_value.isdigit():
             score = int(textbox_value)
             mod = int(score//2)-5
+
+            self.attribute_mods[i] = mod
+
             if mod >= 0:
                 s = '+'+str(mod)
             else:
