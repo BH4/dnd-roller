@@ -24,6 +24,24 @@ class Window(QtWidgets.QMainWindow):
         self.setup()
 
     def setup(self):
+        """
+        Setup input and output systems for the gui as well as variables that
+        save important information.
+
+        Variables relevant outside this function (anything besides static labels):
+        == For getting input:
+        - self.attribute_score_input: textbox input for attribute scores
+        - self.prof_textbox: input for proficiency bonus
+        == For giving output:
+        - self.attribute_mod_labels[i]: labels giving attribute modifiers
+        == Variables for useful numbers:
+        - self.attribute_mods: integer list of modifiers for attributes
+        - self.proficiency: integer proficiency bonus
+        """
+
+        # ---------------------------------------------------------------------
+        # Attribute Section
+        # ---------------------------------------------------------------------
         # Setup attribute buttons
         str_btn = QtWidgets.QPushButton('Strength', self)
         dex_btn = QtWidgets.QPushButton('Dexterity', self)
@@ -58,13 +76,41 @@ class Window(QtWidgets.QMainWindow):
             btn.move(10, i*100+50)
 
             # Connect the button to the roll function
-            # The lambda is just so I can pass a number in. There is probably a
-            # more clear way to do this.
+            # The partial function is just so I can pass a number in. There is
+            # probably a more clear way to do this.
             btn.clicked.connect(partial(self.attribute_roll, i))
 
             # Connect the text box to the function which calculates and changes
             # the modifier label
             textbox.editingFinished.connect(partial(self.set_modifier, i))
+
+        # ---------------------------------------------------------------------
+        # Proficiency Section
+        # ---------------------------------------------------------------------
+        # Setup proficiency modifier input
+        self.proficiency = 2
+        self.prof_textbox = QtWidgets.QLineEdit(self)
+        self.prof_textbox.setText(str(self.proficiency))
+        prof_label = QtWidgets.QLabel('Proficiency Bonus', self)
+
+        # Move and resize proficiency things
+        prof_label.resize(125, 20)
+        prof_label.move(180, 40)
+
+        self.prof_textbox.resize(26, 20)
+        self.prof_textbox.move(150, 40)
+
+        # Connect textbox to self.proficiency
+        self.prof_textbox.editingFinished.connect(self.set_prof)
+
+        # ---------------------------------------------------------------------
+        # Saving Throw Section
+        # ---------------------------------------------------------------------
+
+
+        # ---------------------------------------------------------------------
+        # Skills Section
+        # ---------------------------------------------------------------------
 
         self.show()
 
@@ -94,6 +140,13 @@ class Window(QtWidgets.QMainWindow):
                 s = str(mod)
 
             self.attribute_mod_labels[i].setText(s)
+
+    def set_prof(self):
+        textbox_value = self.prof_textbox.text()
+
+        if textbox_value.isdigit():
+            prof = int(textbox_value)
+            self.proficiency = prof
 
 
 def main():
