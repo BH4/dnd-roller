@@ -21,7 +21,71 @@ class Window(QtWidgets.QMainWindow):
         self.setGeometry(50, 50, 1000, 950)
         self.setWindowTitle('Unnamed Character')
         #self.setWindowIcon(QtGui.QIcon(''))  # set icon
+
+        save_action = QtWidgets.QAction('&Save Character', self)
+        save_action.setShortcut('Ctrl+S')
+        save_action.setStatusTip('Save Character')
+        save_action.triggered.connect(self.save_character)
+
+        load_action = QtWidgets.QAction('&Load Character', self)
+        load_action.setShortcut('Ctrl+O')
+        load_action.setStatusTip('Load Character')
+        load_action.triggered.connect(self.load_character)
+
+        self.statusBar()
+
+        main_menu = self.menuBar()
+        file_menu = main_menu.addMenu('&File')
+        file_menu.addAction(save_action)
+        file_menu.addAction(load_action)
+
         self.setup()
+
+    def save_character(self):
+        """
+        In order to recreate everything we just need the attribute scores,
+        the proficiency bonus, and the list of proficiencies,
+        both saves and skills.
+        """
+
+        file = QtWidgets.QFileDialog.getSaveFileName(self, 'Save Character')
+        filename = file[0]
+        name = filename.split('/')[-1]
+
+        filename += '.txt'
+
+        self.setWindowTitle(name)
+
+        with open(filename, 'w') as f:
+            f.write(str(self.attribute_scores)+'\n')
+            f.write(str(self.proficiency)+'\n')
+            f.write(str(self.save_prof)+'\n')
+            f.write(str(self.skill_prof)+'\n')
+
+    def load_character(self):
+        file = QtWidgets.QFileDialog.getOpenFileName(self, 'Load Character')
+        filename = file[0]
+        name = filename.split('/')[-1]
+        name = name[:-4]
+
+        self.setWindowTitle(name)
+
+        with open(filename, 'r') as f:
+            line = f.readline().strip()[1:-1]
+            self.attribute_scores = [int(x) for x in line.split(', ')]
+
+            line = f.readline().strip()
+            self.proficiency = int(line)
+
+            line = f.readline().strip()[1:-1]
+            new_save_prof = [x == 'True' for x in line.split(', ')]
+
+            line = f.readline().strip()[1:-1]
+            new_skill_prof = [x == 'True' for x in line.split(', ')]
+
+        self.fix_textboxes_and_checkboxes(new_save_prof, new_skill_prof)
+
+        self.recalculate()
 
     def setup(self):
         """
@@ -40,15 +104,22 @@ class Window(QtWidgets.QMainWindow):
 
         == Variables for useful numbers:
         - self.attribute_names: names of attributes in character sheet order
+        - self.attribute_scores: most recent integer input to score
         - self.attribute_mods: integer list of modifiers for attributes
         - self.proficiency: integer proficiency bonus
         - self.save_prof: bool array indicating which saves have proficiency
+        - self.save_checkbox:
         - self.save_mods: integer array of actual saving throw modifiers
         - self.skill_names: names of skills in alphabetical order
         - self.skill_types: index of relevant attribute for the skills
         - self.skill_prof: bool array indicating which skills have proficiency
+        - skill_checkbox:
         - self.skill_mods: integer array of actual skill modifiers
         """
+        left_margin = 10
+        top_margin = 75
+        small_spacing = 35
+        large_spacing = 100
 
         # ---------------------------------------------------------------------
         # Attribute Section
@@ -59,7 +130,8 @@ class Window(QtWidgets.QMainWindow):
         self.attribute_short = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']
 
         self.attribute_mod_labels = []
-        self.attribute_mods = [0, 0, 0, 0, 0, 0]
+        self.attribute_scores = [10]*6
+        self.attribute_mods = [0]*6
         self.attribute_score_input = []
 
         for i, name in enumerate(self.attribute_names):
@@ -77,13 +149,13 @@ class Window(QtWidgets.QMainWindow):
 
             # Move and resize everything
             label.resize(39, 20)
-            label.move(10+50-26//2, i*100+80)
+            label.move(left_margin+50-26//2, i*large_spacing+top_margin+30)
 
             textbox.resize(26, 20)
-            textbox.move(10+50-26//2, i*100+100)
+            textbox.move(left_margin+50-26//2, i*large_spacing+top_margin+50)
 
             btn.resize(100, 30)
-            btn.move(10, i*100+50)
+            btn.move(left_margin, i*large_spacing+top_margin)
 
             # Connect the button to the roll function
             # The partial function is just so I can pass a number in. There is
@@ -105,10 +177,10 @@ class Window(QtWidgets.QMainWindow):
 
         # Move and resize proficiency things
         prof_label.resize(125, 20)
-        prof_label.move(180, 20)
+        prof_label.move(180, top_margin-30)
 
         self.prof_textbox.resize(26, 20)
-        self.prof_textbox.move(150, 20)
+        self.prof_textbox.move(150, top_margin-30)
 
         # Connect textbox to self.proficiency
         self.prof_textbox.editingFinished.connect(self.set_prof)
@@ -119,6 +191,7 @@ class Window(QtWidgets.QMainWindow):
         self.save_mod_labels = []
         self.save_mods = [0]*6
         self.save_prof = [False]*6  # all buttons start off, flip when toggled
+        self.save_checkbox = []
 
         for i, name in enumerate(self.attribute_names):
             # Create button for rolling
@@ -130,16 +203,17 @@ class Window(QtWidgets.QMainWindow):
 
             # create checkbox button for this save
             checkbox = QtWidgets.QCheckBox(self)
+            self.save_checkbox.append(checkbox)
 
             # Move and resize everything
             label.resize(26, 30)
-            label.move(175, i*35+50)
+            label.move(175, i*small_spacing+top_margin)
 
             checkbox.resize(26, 30)
-            checkbox.move(155, i*35+50)
+            checkbox.move(155, i*small_spacing+top_margin)
 
             btn.resize(100, 30)
-            btn.move(200, i*35+50)
+            btn.move(200, i*small_spacing+top_margin)
 
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_save_prof, i))
@@ -164,6 +238,7 @@ class Window(QtWidgets.QMainWindow):
         self.skill_mod_labels = []
         self.skill_mods = [0]*num_skills
         self.skill_prof = [False]*num_skills  # all buttons start off, flip when toggled
+        self.skill_checkbox = []
 
         for i, name in enumerate(self.skill_names):
             # Create button for rolling
@@ -176,16 +251,17 @@ class Window(QtWidgets.QMainWindow):
 
             # create checkbox button for this save
             checkbox = QtWidgets.QCheckBox(self)
+            self.skill_checkbox.append(checkbox)
 
             # Move and resize everything
             label.resize(26, 30)
-            label.move(175, i*35+300)
+            label.move(175, i*small_spacing+300)
 
             checkbox.resize(26, 30)
-            checkbox.move(155, i*35+300)
+            checkbox.move(155, i*small_spacing+300)
 
             btn.resize(200, 30)
-            btn.move(200, i*35+300)
+            btn.move(200, i*small_spacing+300)
 
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_skill_prof, i))
@@ -239,9 +315,7 @@ class Window(QtWidgets.QMainWindow):
 
         if textbox_value.isdigit():
             score = int(textbox_value)
-            mod = int(score//2)-5
-
-            self.attribute_mods[i] = mod
+            self.attribute_scores[i] = score
 
             self.recalculate()
 
@@ -268,7 +342,10 @@ class Window(QtWidgets.QMainWindow):
         """
         # Saves
         for i in range(6):
-            mod = self.attribute_mods[i]
+            score = self.attribute_scores[i]
+            mod = int(score//2)-5
+            self.attribute_mods[i] = mod
+
             if self.save_prof[i]:
                 mod += self.proficiency
             self.save_mods[i] = mod
@@ -309,6 +386,31 @@ class Window(QtWidgets.QMainWindow):
             else:
                 s = str(mod)
             self.skill_mod_labels[i].setText(s)
+
+    def fix_textboxes_and_checkboxes(self, new_save_prof, new_skill_prof):
+        """
+        This should only need to be called when a character is loaded in
+        """
+        self.prof_textbox.setText(str(self.proficiency))
+
+        for i in range(6):
+            # attribute scores
+            score = self.attribute_scores[i]
+            self.attribute_score_input[i].setText(str(score))
+
+            # save prof
+            if self.save_prof[i] != new_save_prof[i]:
+                checkbox = self.save_checkbox[i]
+                checkbox.setChecked(new_save_prof[i])
+
+        for i in range(len(self.skill_names)):
+            # skill prof
+            prof = self.skill_prof[i]
+            checkbox = self.skill_checkbox[i]
+            checkbox.setChecked(prof)
+            if self.skill_prof[i] != new_skill_prof[i]:
+                checkbox = self.skill_checkbox[i]
+                checkbox.setChecked(new_skill_prof[i])
 
 
 def main():
