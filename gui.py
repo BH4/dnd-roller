@@ -269,6 +269,21 @@ class Window(QtWidgets.QMainWindow):
             # Connect the skill roll button to the skill roll function
             btn.clicked.connect(partial(self.skill_roll, i))
 
+        # ---------------------------------------------------------------------
+        # Passive Perception Section
+        # ---------------------------------------------------------------------
+        # Passive perception is just calculated and thus only uses labels
+        self.proficiency = 2
+        self.passive_perception = QtWidgets.QLabel('10', self)
+        passive_perception_label = QtWidgets.QLabel('Passive\nPerception', self)
+
+        # Move and resize proficiency things
+        passive_perception_label.resize(125, 40)
+        passive_perception_label.move(40, 700)
+
+        self.passive_perception.resize(26, 20)
+        self.passive_perception.move(left_margin, 707)
+
         self.show()
 
     def attribute_roll(self, i):
@@ -357,6 +372,9 @@ class Window(QtWidgets.QMainWindow):
             if self.skill_prof[i]:
                 mod += self.proficiency
             self.skill_mods[i] = mod
+
+        passive_wis = str(10+self.skill_mods[11])
+        self.passive_perception.setText(passive_wis)
 
         self.fix_labels()
 
