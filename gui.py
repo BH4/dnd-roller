@@ -18,7 +18,7 @@ class Window(QtWidgets.QMainWindow):
         super(Window, self).__init__()
 
         # startx, starty, width, height
-        self.setGeometry(50, 50, 1000, 950)
+        self.setGeometry(50, 50, 1200, 950)
         self.setWindowTitle('Unnamed Character')
         #self.setWindowIcon(QtGui.QIcon(''))  # set icon
 
@@ -284,7 +284,37 @@ class Window(QtWidgets.QMainWindow):
         self.passive_perception.resize(26, 20)
         self.passive_perception.move(left_margin, 707)
 
+        # ---------------------------------------------------------------------
+        # Attacks & Spellcasting Section
+        # ---------------------------------------------------------------------
+        spacing = 10
+        self.attack_widget_list = []
+        self.attack_list = []
+        attacks_label = QtWidgets.QLabel('Attacks & Spellcasting', self)
+        #section_labels = QtWidgets.QLabel('Name'+' '*2*spacing+'Atk Bonus'+' '*spacing+'Damage'+' '*spacing+'Type', self)
+        section_labels = [QtWidgets.QLabel('Name', self),
+                          QtWidgets.QLabel('Atk Bonus', self),
+                          QtWidgets.QLabel('Damage', self),
+                          QtWidgets.QLabel('Type', self)]
+        self.add_attack_btn = QtWidgets.QPushButton('+'.format(name, short_att), self)
+
+        # Move and resize attack things
+        attacks_label.resize(160, 20)
+        attacks_label.move(550, top_margin-20)
+
+        self.section_labels_pos = [450, 590, 690, 840]
+        for i in range(4):
+            section_labels[i].resize(len(section_labels[i].text())*11, 20)
+            section_labels[i].move(self.section_labels_pos[i], top_margin+10)
+
+        self.add_attack_btn.resize(20, 20)
+        self.add_attack_btn.move(550, top_margin+40)
+
+        self.add_attack_btn.clicked.connect(self.add_attack)
+
         self.show()
+
+    # Rolls and other button connected things
 
     def attribute_roll(self, i):
         mod = self.attribute_mods[i]
@@ -325,6 +355,73 @@ class Window(QtWidgets.QMainWindow):
 
         print(r1+mod, r2+mod)
 
+    def add_attack(self):
+        """
+        In this function the button which adds more attacks is moved down,
+        a text box is added for the name, attack bonus, damage, and type.
+        Two buttons are added next to this, one rolls for attacks and the
+        other rolls for damage.
+        """
+
+        xpos = self.add_attack_btn.x()
+        ypos = self.add_attack_btn.y()
+
+        # move button down
+        self.add_attack_btn.move(xpos, ypos+40)
+
+        # Add all the text boxes
+        section_textbox_sizes = [125, 40, 125, 100]
+
+        curr_attack_ind = len(self.attack_widget_list)
+
+        row = []
+        for i in range(4):
+            section = QtWidgets.QLineEdit(self)
+            section.resize(section_textbox_sizes[i], 20)
+            section.move(self.section_labels_pos[i], ypos)
+            section.setVisible(True)
+
+            # Connect every section to the function that saves the info
+            section.editingFinished.connect(partial(self.save_attack, curr_attack_ind))
+
+            row.append(section)
+
+        # Add buttons
+        attack_btn = QtWidgets.QPushButton('Attack', self)
+        damage_btn = QtWidgets.QPushButton('Damage', self)
+
+        attack_btn.resize(55, 30)
+        attack_btn.move(950, ypos-5)
+        attack_btn.setVisible(True)
+
+        damage_btn.resize(70, 30)
+        damage_btn.move(1010, ypos-5)
+        damage_btn.setVisible(True)
+
+        attack_btn.clicked.connect(partial(self.attack_roll, curr_attack_ind))
+        damage_btn.clicked.connect(partial(self.damage_roll, curr_attack_ind))
+
+
+        self.attack_widget_list.append(row)
+
+
+
+    def attack_roll(self, attack_ind):
+        4
+
+    def damage_roll(self, attack_ind):
+        4
+
+
+
+
+
+
+
+
+
+    # Functions to set values
+
     def set_modifier(self, i):
         textbox_value = self.attribute_score_input[i].text()
 
@@ -350,6 +447,12 @@ class Window(QtWidgets.QMainWindow):
     def set_skill_prof(self, i):
         self.skill_prof[i] = not self.skill_prof[i]
         self.recalculate()
+
+    def save_attack(self, i):
+        attack_textboxes = self.attack_widget_list[i]
+
+
+    # Fixing all numbers and values section
 
     def recalculate(self):
         """
