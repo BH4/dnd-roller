@@ -1,5 +1,0 @@
-# Name : Attack bonus Formula : Damage formula
-# variables: prof, str, dex, con, int, wis, cha
-# Saving throws and skill checks are already defined.
-Sword : 1d20+str+prof :  1d8+str
-Warhammer : 1d20+prof+str :  1d8+cha
