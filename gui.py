@@ -4,6 +4,7 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication
 
+import re
 from functools import partial
 from random import randint
 
@@ -61,6 +62,7 @@ class Window(QtWidgets.QMainWindow):
             f.write(str(self.proficiency)+'\n')
             f.write(str(self.save_prof)+'\n')
             f.write(str(self.skill_prof)+'\n')
+            f.write(str(self.attack_list)+'\n')
 
     def load_character(self):
         file = QtWidgets.QFileDialog.getOpenFileName(self, 'Load Character')
@@ -68,6 +70,11 @@ class Window(QtWidgets.QMainWindow):
         name = filename.split('/')[-1]
         name = name[:-4]
 
+        # Close window and open a new one
+        self.close()
+        self = Window()
+
+        #self.setup()
         self.setWindowTitle(name)
 
         with open(filename, 'r') as f:
@@ -83,6 +90,16 @@ class Window(QtWidgets.QMainWindow):
             line = f.readline().strip()[1:-1]
             new_skill_prof = [x == 'True' for x in line.split(', ')]
 
+            # Add custom attacks back in.
+            line = f.readline().strip()[2:-2]
+            for attack in line.split('], ['):
+                self.add_attack()
+                for i, t in enumerate(attack[1:-1].split("', '")):
+                    self.attack_widget_list[-1][i].setText(t)
+
+                # Make sure to save these after entering the data
+                self.save_attack(len(self.attack_list)-1)
+ 
         self.fix_textboxes_and_checkboxes(new_save_prof, new_skill_prof)
 
         self.recalculate()
@@ -96,6 +113,7 @@ class Window(QtWidgets.QMainWindow):
         == For getting input:
         - self.attribute_score_input: text box input for attribute scores
         - self.prof_textbox: input for proficiency bonus
+        - self.attack_widget_list: textboxes for custom attacks
 
         == For giving output:
         - self.attribute_mod_labels[i]: labels giving attribute modifiers
@@ -115,6 +133,7 @@ class Window(QtWidgets.QMainWindow):
         - self.skill_prof: bool array indicating which skills have proficiency
         - skill_checkbox:
         - self.skill_mods: integer array of actual skill modifiers
+        - self.attack_list: last acceptable input for a custom attack
         """
         left_margin = 10
         top_margin = 75
@@ -287,22 +306,21 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         # Attacks & Spellcasting Section
         # ---------------------------------------------------------------------
-        spacing = 10
         self.attack_widget_list = []
         self.attack_list = []
         attacks_label = QtWidgets.QLabel('Attacks & Spellcasting', self)
-        #section_labels = QtWidgets.QLabel('Name'+' '*2*spacing+'Atk Bonus'+' '*spacing+'Damage'+' '*spacing+'Type', self)
+
         section_labels = [QtWidgets.QLabel('Name', self),
                           QtWidgets.QLabel('Atk Bonus', self),
                           QtWidgets.QLabel('Damage', self),
                           QtWidgets.QLabel('Type', self)]
-        self.add_attack_btn = QtWidgets.QPushButton('+'.format(name, short_att), self)
+        self.add_attack_btn = QtWidgets.QPushButton('+', self)
 
         # Move and resize attack things
         attacks_label.resize(160, 20)
         attacks_label.move(550, top_margin-20)
 
-        self.section_labels_pos = [450, 590, 690, 840]
+        self.section_labels_pos = [450, 590, 730, 880]
         for i in range(4):
             section_labels[i].resize(len(section_labels[i].text())*11, 20)
             section_labels[i].move(self.section_labels_pos[i], top_margin+10)
@@ -314,8 +332,67 @@ class Window(QtWidgets.QMainWindow):
 
         self.show()
 
-    # Rolls and other button connected things
+    # Interpret dice rolls and modifiers entered as text
+    def is_correctly_defined(self, roll):
+        """
+        Checks that each element of the string roll separated by a plus or
+        minus is interpretable as a dice roll, a number, or a predefined
+        modifier.
+        """
+        result = self.evaluate(roll)
+        if result[0] is None:
+            return False
+        return True
 
+    def evaluate(self, roll):
+        """
+        Does any dice rolling and modifier adding specified by the string roll
+        """
+        # parts will be a list of the dice rolls and modifiers along with the
+        # plus and minus signs between them.
+        if len(roll) == 0:
+            return 0, 0
+
+        last_sign = 1
+        dice_val = 0
+        mod = 0
+        parts = re.split('(\+|-)', roll)
+
+        short_att_list = [x.lower() for x in self.attribute_short]
+        for p in parts:
+            """
+            Possibilities:
+            1) p could be a plus or minus sign
+            2) p could be a number, e.g. 2
+            3) p could be a modifier, e.g. str, dex, int, prof, ect.
+            4) p could be a dice roll, e.g. 1d20, 5d6, d8, ect.
+            """
+
+            if p == '+':
+                last_sign = 1
+            elif p == '-':
+                last_sign = -1
+            elif p.isdigit():
+                mod += last_sign*int(p)
+            elif p.lower() == 'prof':
+                mod += last_sign*self.proficiency
+            elif p.lower() in short_att_list:
+                ind = short_att_list.index(p.lower())
+                mod += last_sign*self.attribute_mods[ind]
+            else:
+                dice = p.split('d')
+                if len(dice) > 0 and len(dice[0]) == 0:  # 'd10' is well defined
+                    dice[0] = '1'
+                if len(dice) != 2 or (not dice[0].isdigit()) or (not dice[1].isdigit()):
+                    return None, None
+
+                dice = [int(x) for x in dice]
+                for i in range(dice[0]):
+                    dice_val += last_sign*d(dice[1])
+
+        return dice_val, mod
+
+    # Rolls and other button connected things
     def attribute_roll(self, i):
         mod = self.attribute_mods[i]
 
@@ -370,7 +447,7 @@ class Window(QtWidgets.QMainWindow):
         self.add_attack_btn.move(xpos, ypos+40)
 
         # Add all the text boxes
-        section_textbox_sizes = [125, 40, 125, 100]
+        section_textbox_sizes = [125, 125, 125, 100]
 
         curr_attack_ind = len(self.attack_widget_list)
 
@@ -388,40 +465,86 @@ class Window(QtWidgets.QMainWindow):
 
         # Add buttons
         attack_btn = QtWidgets.QPushButton('Attack', self)
-        damage_btn = QtWidgets.QPushButton('Damage', self)
+        remove_btn = QtWidgets.QPushButton('-', self)
 
         attack_btn.resize(55, 30)
-        attack_btn.move(950, ypos-5)
+        attack_btn.move(1010, ypos-5)
         attack_btn.setVisible(True)
 
-        damage_btn.resize(70, 30)
-        damage_btn.move(1010, ypos-5)
-        damage_btn.setVisible(True)
+        remove_btn.resize(30, 30)
+        remove_btn.move(1085, ypos-5)
+        remove_btn.setVisible(True)
 
         attack_btn.clicked.connect(partial(self.attack_roll, curr_attack_ind))
-        damage_btn.clicked.connect(partial(self.damage_roll, curr_attack_ind))
+        remove_btn.clicked.connect(partial(self.remove_attack, curr_attack_ind))
 
+        row.append(attack_btn)
+        row.append(remove_btn)
 
         self.attack_widget_list.append(row)
+        self.attack_list.append(['', '', '', ''])  # List to be filled when the row is used
 
+    def remove_attack(self, i):
+        """
+        Remove this attack from the lists, move all attacks below it up by
+        40 units as well as the add attack button.
+        """
+        for w in self.attack_widget_list[i]:
+            w.deleteLater()
 
+        self.attack_widget_list = self.attack_widget_list[:i]+self.attack_widget_list[i+1:]
+        self.attack_list = self.attack_list[:i]+self.attack_list[i+1:]
+
+        for j in range(i, len(self.attack_widget_list)):
+            for w in self.attack_widget_list[j]:
+                w.move(w.x(), w.y()-40)
+
+            attack_btn = self.attack_widget_list[j][-2]
+            remove_btn = self.attack_widget_list[j][-1]
+            attack_btn.clicked.disconnect()
+            remove_btn.clicked.disconnect()
+            attack_btn.clicked.connect(partial(self.attack_roll, j))
+            remove_btn.clicked.connect(partial(self.remove_attack, j))
+
+        xpos = self.add_attack_btn.x()
+        ypos = self.add_attack_btn.y()
+        self.add_attack_btn.move(xpos, ypos-40)
 
     def attack_roll(self, attack_ind):
-        4
+        """
+        Makes an attack roll. Rolls dice twice for advantage/disadvantage.
+        Also rolls damage and adds on extra dice rolls if either d20 came up
+        as a natural 20 e.g. (7+4) where the first number is the non-crit
+        damage and the total is crit damage.
+        """
 
-    def damage_roll(self, attack_ind):
-        4
+        attack = self.attack_list[attack_ind]
 
+        # There usually isn't dice with an attack bonus, but I will add it in
+        # anyway. Can't hurt anything.
+        dice, mod = self.evaluate(attack[1])
+        atk_bonus = dice+mod
 
+        r1 = d(20)
+        r2 = d(20)
 
+        print('{} attack roll'.format(attack[0]))
+        print('Rolls:', r1, r2)
+        print('Attack bonus:', atk_bonus)
+        print(r1+atk_bonus, r2+atk_bonus)
 
+        print('{} damage roll'.format(attack[0]))
+        crit = (r1 == 20) or (r2 == 20)
 
+        damage_dice, damage_mod = self.evaluate(attack[2])
+        damage_value = damage_dice+damage_mod
+        if crit:
+            damage_dice2, _ = self.evaluate(attack[2])
+            print('Critical damage: {}+{}'.format(damage_value, damage_dice2))
+        else:
+            print('Damage:', damage_value)
 
-
-
-
-    # Functions to set values
-
+    # Functions to set or save values
     def set_modifier(self, i):
         textbox_value = self.attribute_score_input[i].text()
 
@@ -449,8 +572,23 @@ class Window(QtWidgets.QMainWindow):
         self.recalculate()
 
     def save_attack(self, i):
-        attack_textboxes = self.attack_widget_list[i]
+        """
+        This function should save data from the entire row of data.
+        A list has already been added to self.attack_list in order to keep
+        the place saved.
+        Name can be anything
+        attack bonus needs to be interpretable as a modifier (technically could include dice roll how I have checked it)
+        damage roll needs to be interpretable as a dice roll e.g. 3d10+5+str
+        type can be anything
+        """
 
+        attack_textboxes = self.attack_widget_list[i][:4]
+        data = [x.text() for x in attack_textboxes]
+        if not self.is_correctly_defined(data[1]):
+            data[1] = self.attack_list[i][1]
+        if not self.is_correctly_defined(data[2]):
+            data[2] = self.attack_list[i][2]
+        self.attack_list[i] = data
 
     # Fixing all numbers and values section
 
@@ -482,6 +620,12 @@ class Window(QtWidgets.QMainWindow):
         self.fix_labels()
 
     def fix_labels(self):
+        """
+        recalculate has fixed all the internal variables that may have been
+        changed, this function will now fix the labels showing the modifiers
+        to reflect this change.
+        """
+
         for i in range(6):
             # attributes
             mod = self.attribute_mods[i]
@@ -510,7 +654,9 @@ class Window(QtWidgets.QMainWindow):
 
     def fix_textboxes_and_checkboxes(self, new_save_prof, new_skill_prof):
         """
-        This should only need to be called when a character is loaded in
+        This should only need to be called when a character is loaded in.
+        Resets text boxes using the saved data so that they correctly
+        reflect the internal state.
         """
         self.prof_textbox.setText(str(self.proficiency))
 
