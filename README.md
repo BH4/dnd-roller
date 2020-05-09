@@ -26,6 +26,6 @@ cha = Charisma
 
 ## Example
 
-![Image description](Example/Vaeril.jpg)
+<img src="Example/Vaeril.jpg" alt="Picture of an example character in use with the program." width="600"/>
 
 The inspiration for this comes directly from the character sheet interface from the roll20 website.
