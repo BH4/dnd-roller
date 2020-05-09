@@ -53,6 +53,9 @@ class Window(QtWidgets.QMainWindow):
         filename = file[0]
         name = filename.split('/')[-1]
 
+        if len(name) == 0:
+            return
+
         filename += '.txt'
 
         self.setWindowTitle(name)
@@ -69,6 +72,9 @@ class Window(QtWidgets.QMainWindow):
         filename = file[0]
         name = filename.split('/')[-1]
         name = name[:-4]
+
+        if len(filename) == 0:
+            return
 
         # Close window and open a new one
         self.close()
@@ -297,7 +303,7 @@ class Window(QtWidgets.QMainWindow):
         passive_perception_label = QtWidgets.QLabel('Passive\nPerception', self)
 
         # Move and resize proficiency things
-        passive_perception_label.resize(125, 40)
+        passive_perception_label.resize(75, 40)
         passive_perception_label.move(40, 700)
 
         self.passive_perception.resize(26, 20)
@@ -414,44 +420,33 @@ class Window(QtWidgets.QMainWindow):
         return dice_val, mod
 
     # Rolls and other button connected things
+    def write_roll(self, name, mod):
+        r1 = d(20)
+        r2 = d(20)
+
+        self.write('{} roll'.format(name))
+        self.write('{}+{} : {}+{}'.format(r1, mod, r2, mod))
+        self.write('{} : {}'.format(r1+mod, r2+mod))
+        self.write('')
+
     def attribute_roll(self, i):
+        name = self.attribute_names[i]
         mod = self.attribute_mods[i]
 
-        self.write('Rolling for {}'.format(self.attribute_names[i]))
-
-        r1 = d(20)
-        r2 = d(20)
-
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Mod: {}'.format(mod))
-
-        self.write('{} {}'.format(r1+mod, r2+mod))
+        self.write_roll(name, mod)
 
     def saving_roll(self, i):
+        name = self.attribute_names[i]+' Saving'
         mod = self.save_mods[i]
 
-        self.write('{} saving roll'.format(self.attribute_names[i]))
-
-        r1 = d(20)
-        r2 = d(20)
-
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Mod: {}'.format(mod))
-
-        self.write('{} {}'.format(r1+mod, r2+mod))
+        self.write_roll(name, mod)
 
     def skill_roll(self, i):
-        mod = self.skill_mods[i]
         short_att = self.attribute_short[self.skill_type[i]]
-        self.write('{} ({}) roll'.format(self.skill_names[i], short_att))
+        name = '{} ({})'.format(self.skill_names[i], short_att)
+        mod = self.skill_mods[i]
 
-        r1 = d(20)
-        r2 = d(20)
-
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Mod: {}'.format(mod))
-
-        self.write('{} {}'.format(r1+mod, r2+mod))
+        self.write_roll(name, mod)
 
     def add_attack(self):
         """
@@ -550,20 +545,21 @@ class Window(QtWidgets.QMainWindow):
         r2 = d(20)
 
         self.write('{} attack roll'.format(attack[0]))
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Attack bonus: {}'.format(atk_bonus))
-        self.write('{} {}'.format(r1+atk_bonus, r2+atk_bonus))
+        self.write('{}+{} : {}+{}'.format(r1, atk_bonus, r2, atk_bonus))
+        self.write('{} : {}'.format(r1+atk_bonus, r2+atk_bonus))
+        self.write('')
 
-        self.write('{} damage roll'.format(attack[0]))
         crit = (r1 == 20) or (r2 == 20)
-
         damage_dice, damage_mod = self.evaluate(attack[2])
         damage_value = damage_dice+damage_mod
+
+        self.write('{} damage roll'.format(attack[0]))
         if crit:
             damage_dice2, _ = self.evaluate(attack[2])
             self.write('Critical damage: {}+{}'.format(damage_value, damage_dice2))
         else:
             self.write('Damage: {}'.format(damage_value))
+        self.write('')
 
     def manual_input(self):
         roll = self.roll_input.text()
