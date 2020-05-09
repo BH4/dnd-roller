@@ -330,28 +330,7 @@ class Window(QtWidgets.QMainWindow):
 
         self.add_attack_btn.clicked.connect(self.add_attack)
 
-        # ---------------------------------------------------------------------
-        # Roll log Section
-        # ---------------------------------------------------------------------
-        self.roll_log = QtWidgets.QPlainTextEdit(self)
-        self.roll_log.setReadOnly(True)
-        self.roll_input = QtWidgets.QLineEdit(self)
-
-        self.roll_log.resize(700, 380)
-        self.roll_log.move(self.section_labels_pos[0], 500)
-
-        self.roll_input.resize(700, 20)
-        self.roll_input.move(self.section_labels_pos[0], 500+380)
-
-        self.roll_input.returnPressed.connect(self.manual_input)
-
         self.show()
-
-    def write(self, text):
-        """
-        Handles writing output to the QPlainTextEdit widget
-        """
-        self.roll_log.appendPlainText(text)
 
     # Interpret dice rolls and modifiers entered as text
     def is_correctly_defined(self, roll):
@@ -417,41 +396,41 @@ class Window(QtWidgets.QMainWindow):
     def attribute_roll(self, i):
         mod = self.attribute_mods[i]
 
-        self.write('Rolling for {}'.format(self.attribute_names[i]))
+        print('Rolling for {}'.format(self.attribute_names[i]))
 
         r1 = d(20)
         r2 = d(20)
 
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Mod: {}'.format(mod))
+        print('Rolls:', r1, r2)
+        print('Mod:', mod)
 
-        self.write('{} {}'.format(r1+mod, r2+mod))
+        print(r1+mod, r2+mod)
 
     def saving_roll(self, i):
         mod = self.save_mods[i]
 
-        self.write('{} saving roll'.format(self.attribute_names[i]))
+        print('{} saving roll'.format(self.attribute_names[i]))
 
         r1 = d(20)
         r2 = d(20)
 
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Mod: {}'.format(mod))
+        print('Rolls:', r1, r2)
+        print('Mod:', mod)
 
-        self.write('{} {}'.format(r1+mod, r2+mod))
+        print(r1+mod, r2+mod)
 
     def skill_roll(self, i):
         mod = self.skill_mods[i]
         short_att = self.attribute_short[self.skill_type[i]]
-        self.write('{} ({}) roll'.format(self.skill_names[i], short_att))
+        print('{} ({}) roll'.format(self.skill_names[i], short_att))
 
         r1 = d(20)
         r2 = d(20)
 
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Mod: {}'.format(mod))
+        print('Rolls:', r1, r2)
+        print('Mod:', mod)
 
-        self.write('{} {}'.format(r1+mod, r2+mod))
+        print(r1+mod, r2+mod)
 
     def add_attack(self):
         """
@@ -549,30 +528,21 @@ class Window(QtWidgets.QMainWindow):
         r1 = d(20)
         r2 = d(20)
 
-        self.write('{} attack roll'.format(attack[0]))
-        self.write('Rolls: {} {}'.format(r1, r2))
-        self.write('Attack bonus: {}'.format(atk_bonus))
-        self.write('{} {}'.format(r1+atk_bonus, r2+atk_bonus))
+        print('{} attack roll'.format(attack[0]))
+        print('Rolls:', r1, r2)
+        print('Attack bonus:', atk_bonus)
+        print(r1+atk_bonus, r2+atk_bonus)
 
-        self.write('{} damage roll'.format(attack[0]))
+        print('{} damage roll'.format(attack[0]))
         crit = (r1 == 20) or (r2 == 20)
 
         damage_dice, damage_mod = self.evaluate(attack[2])
         damage_value = damage_dice+damage_mod
         if crit:
             damage_dice2, _ = self.evaluate(attack[2])
-            self.write('Critical damage: {}+{}'.format(damage_value, damage_dice2))
+            print('Critical damage: {}+{}'.format(damage_value, damage_dice2))
         else:
-            self.write('Damage: {}'.format(damage_value))
-
-    def manual_input(self):
-        roll = self.roll_input.text()
-        dice, mod = self.evaluate(roll)
-        if dice is not None:
-            self.write('{} = {}'.format(roll, dice+mod))
-        else:
-            self.write('Incorrect format.')
-        self.roll_input.setText('')
+            print('Damage:', damage_value)
 
     # Functions to set or save values
     def set_modifier(self, i):
