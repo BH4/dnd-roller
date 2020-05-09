@@ -41,4 +41,10 @@ python3 dnd_roller_gui.py
 
 <img src="Example/Vaeril.jpg" alt="Picture of an example character in use with the program." width="600"/>
 
+## Contributing
+Anyone who wants is free to work on any of the issues listed in the issue tracker or create there own. Please contact me through the issue tracker before begining if you would like your changes to be included in this repository.
+
+Changes should be done through a pull request coming from your clone of the repository.
+
+# Inspiration
 The inspiration for this comes directly from the character sheet interface from the roll20 website.
