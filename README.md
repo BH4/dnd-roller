@@ -24,6 +24,19 @@ wis = Wisdom
 
 cha = Charisma
 
+## How to Use
+To run this code you will need python3 with pyqt5. Python3 can be downloaded from python.org. After installing python3, you can install pyqt5 by running the below command in a terminal window.
+
+```
+pip install PyQt5
+```
+
+In order to start the program run the file dnd_roller_gui.py. This can be done from a terminal with
+
+```
+python3 dnd_roller_gui.py
+```
+
 ## Example
 
 <img src="Example/Vaeril.jpg" alt="Picture of an example character in use with the program." width="600"/>
