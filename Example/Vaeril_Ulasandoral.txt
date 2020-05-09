@@ -1,0 +1,5 @@
+[14, 16, 17, 19, 12, 14]
+2
+[False, False, False, True, True, False]
+[False, False, True, False, False, True, False, False, True, False, False, True, False, True, False, False, False, False]
+[['Dagger', 'dex+prof', '1d4+dex', 'piercing'], ['Fire Bolt', 'int+prof', '1d10', 'fire'], ['Shocking Grasp', 'int+prof', '1d8', 'lightning'], ['Magic Missile', '', '1d4+1', 'force'], ['Sleep', '', '5d8', ''], ['Thunderwave', '', '2d8', 'thunder']]

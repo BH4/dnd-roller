@@ -536,20 +536,24 @@ class Window(QtWidgets.QMainWindow):
 
         attack = self.attack_list[attack_ind]
 
-        # There usually isn't dice with an attack bonus, but I will add it in
-        # anyway. Can't hurt anything.
-        dice, mod = self.evaluate(attack[1])
-        atk_bonus = dice+mod
+        if len(attack[1]) > 0:
+            # There usually isn't dice with an attack bonus, but I will add it in
+            # anyway. Can't hurt anything.
+            dice, mod = self.evaluate(attack[1])
+            atk_bonus = dice+mod
 
-        r1 = d(20)
-        r2 = d(20)
+            r1 = d(20)
+            r2 = d(20)
 
-        self.write('{} attack roll'.format(attack[0]))
-        self.write('{}+{} : {}+{}'.format(r1, atk_bonus, r2, atk_bonus))
-        self.write('{} : {}'.format(r1+atk_bonus, r2+atk_bonus))
-        self.write('')
+            self.write('{} attack roll'.format(attack[0]))
+            self.write('{}+{} : {}+{}'.format(r1, atk_bonus, r2, atk_bonus))
+            self.write('{} : {}'.format(r1+atk_bonus, r2+atk_bonus))
+            self.write('')
 
-        crit = (r1 == 20) or (r2 == 20)
+            crit = (r1 == 20) or (r2 == 20)
+        else:
+            crit = False
+
         damage_dice, damage_mod = self.evaluate(attack[2])
         damage_value = damage_dice+damage_mod
 
@@ -569,6 +573,7 @@ class Window(QtWidgets.QMainWindow):
         else:
             self.write('Incorrect format.')
         self.roll_input.setText('')
+        self.write('')
 
     # Functions to set or save values
     def set_modifier(self, i):
