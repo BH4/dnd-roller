@@ -1,6 +1,6 @@
 # dnd-roller
 ## Introduction
-Add in attribute scores and check off which skills are proficient and the program will automatically calculate all modifiers. Rolling for strength checks, saving throws, or any skill is as simple as pushing the correct button.
+Designed for D&D 5th Edition. Add in attribute scores and check off which skills are proficient and the program will automatically calculate all modifiers. Rolling for strength checks, saving throws, or any skill is as simple as pushing the correct button.
 
 Additionally, data can be added to the "Attacks & Spellcasting" section for attack and damage rolls. These are written similarly to the way they are on a standard character sheet (name, attack bonus, damage, and type). The attack bonus and damage can be written as any combination of dice rolls, numbers, and modifier shorthands.
 
