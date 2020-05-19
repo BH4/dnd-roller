@@ -2,7 +2,8 @@
 
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QPushButton, QLineEdit, QLabel, QCheckBox, QPlainTextEdit
+from PyQt5.QtWidgets import QApplication, QPushButton, QLineEdit, QLabel
+from PyQt5.QtWidgets import QCheckBox, QPlainTextEdit
 
 import re
 from functools import partial
@@ -164,12 +165,12 @@ class Window(QtWidgets.QMainWindow):
             btn = QPushButton(name, self)
 
             # Create a text box for the attribute score
-            textbox = QtWidgets.QLineEdit(self)
+            textbox = QLineEdit(self)
             textbox.setText('10')
             self.attribute_score_input.append(textbox)
 
             # Create a label for the modifier
-            label = QtWidgets.QLabel('+0', self)
+            label = QLabel('+0', self)
             self.attribute_mod_labels.append(label)
 
             # Move and resize everything
@@ -196,9 +197,9 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         # Setup proficiency modifier input
         self.proficiency = 2
-        self.prof_textbox = QtWidgets.QLineEdit(self)
+        self.prof_textbox = QLineEdit(self)
         self.prof_textbox.setText(str(self.proficiency))
-        prof_label = QtWidgets.QLabel('Proficiency Bonus', self)
+        prof_label = QLabel('Proficiency Bonus', self)
 
         # Move and resize proficiency things
         prof_label.resize(125, 20)
@@ -223,7 +224,7 @@ class Window(QtWidgets.QMainWindow):
             btn = QPushButton(name, self)
 
             # create label showing modifier for this save
-            label = QtWidgets.QLabel('+0', self)
+            label = QLabel('+0', self)
             self.save_mod_labels.append(label)
 
             # create checkbox button for this save
@@ -271,7 +272,7 @@ class Window(QtWidgets.QMainWindow):
             btn = QPushButton('{} ({})'.format(name, short_att), self)
 
             # create label showing modifier for this save
-            label = QtWidgets.QLabel('+0', self)
+            label = QLabel('+0', self)
             self.skill_mod_labels.append(label)
 
             # create checkbox button for this save
@@ -299,8 +300,8 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         # Passive perception is just calculated and thus only uses labels
         self.proficiency = 2
-        self.passive_perception = QtWidgets.QLabel('10', self)
-        passive_perception_label = QtWidgets.QLabel('Passive\nPerception', self)
+        self.passive_perception = QLabel('10', self)
+        passive_perception_label = QLabel('Passive\nPerception', self)
 
         # Move and resize proficiency things
         passive_perception_label.resize(75, 40)
@@ -314,12 +315,12 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         self.attack_widget_list = []
         self.attack_list = []
-        attacks_label = QtWidgets.QLabel('Attacks & Spellcasting', self)
+        attacks_label = QLabel('Attacks & Spellcasting', self)
 
-        section_labels = [QtWidgets.QLabel('Name', self),
-                          QtWidgets.QLabel('Atk Bonus', self),
-                          QtWidgets.QLabel('Damage', self),
-                          QtWidgets.QLabel('Type', self)]
+        section_labels = [QLabel('Name', self),
+                          QLabel('Atk Bonus', self),
+                          QLabel('Damage', self),
+                          QLabel('Type', self)]
         self.add_attack_btn = QPushButton('+', self)
 
         # Move and resize attack things
@@ -341,7 +342,7 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         self.roll_log = QPlainTextEdit(self)
         self.roll_log.setReadOnly(True)
-        self.roll_input = QtWidgets.QLineEdit(self)
+        self.roll_input = QLineEdit(self)
 
         self.roll_log.resize(700, 380)
         self.roll_log.move(self.section_labels_pos[0], 500)
@@ -469,7 +470,7 @@ class Window(QtWidgets.QMainWindow):
 
         row = []
         for i in range(4):
-            section = QtWidgets.QLineEdit(self)
+            section = QLineEdit(self)
             section.resize(section_textbox_sizes[i], 20)
             section.move(self.section_labels_pos[i], ypos)
             section.setVisible(True)
