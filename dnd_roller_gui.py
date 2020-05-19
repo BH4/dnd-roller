@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QPushButton, QLineEdit, QLabel, QCheckBox, QPlainTextEdit
 
 import re
 from functools import partial
@@ -161,7 +161,7 @@ class Window(QtWidgets.QMainWindow):
 
         for i, name in enumerate(self.attribute_names):
             # Create button for rolling
-            btn = QtWidgets.QPushButton(name, self)
+            btn = QPushButton(name, self)
 
             # Create a text box for the attribute score
             textbox = QtWidgets.QLineEdit(self)
@@ -220,14 +220,14 @@ class Window(QtWidgets.QMainWindow):
 
         for i, name in enumerate(self.attribute_names):
             # Create button for rolling
-            btn = QtWidgets.QPushButton(name, self)
+            btn = QPushButton(name, self)
 
             # create label showing modifier for this save
             label = QtWidgets.QLabel('+0', self)
             self.save_mod_labels.append(label)
 
             # create checkbox button for this save
-            checkbox = QtWidgets.QCheckBox(self)
+            checkbox = QCheckBox(self)
             self.save_checkbox.append(checkbox)
 
             # Move and resize everything
@@ -268,14 +268,14 @@ class Window(QtWidgets.QMainWindow):
         for i, name in enumerate(self.skill_names):
             # Create button for rolling
             short_att = self.attribute_short[self.skill_type[i]]
-            btn = QtWidgets.QPushButton('{} ({})'.format(name, short_att), self)
+            btn = QPushButton('{} ({})'.format(name, short_att), self)
 
             # create label showing modifier for this save
             label = QtWidgets.QLabel('+0', self)
             self.skill_mod_labels.append(label)
 
             # create checkbox button for this save
-            checkbox = QtWidgets.QCheckBox(self)
+            checkbox = QCheckBox(self)
             self.skill_checkbox.append(checkbox)
 
             # Move and resize everything
@@ -320,7 +320,7 @@ class Window(QtWidgets.QMainWindow):
                           QtWidgets.QLabel('Atk Bonus', self),
                           QtWidgets.QLabel('Damage', self),
                           QtWidgets.QLabel('Type', self)]
-        self.add_attack_btn = QtWidgets.QPushButton('+', self)
+        self.add_attack_btn = QPushButton('+', self)
 
         # Move and resize attack things
         attacks_label.resize(160, 20)
@@ -339,7 +339,7 @@ class Window(QtWidgets.QMainWindow):
         # ---------------------------------------------------------------------
         # Roll log Section
         # ---------------------------------------------------------------------
-        self.roll_log = QtWidgets.QPlainTextEdit(self)
+        self.roll_log = QPlainTextEdit(self)
         self.roll_log.setReadOnly(True)
         self.roll_input = QtWidgets.QLineEdit(self)
 
@@ -480,8 +480,8 @@ class Window(QtWidgets.QMainWindow):
             row.append(section)
 
         # Add buttons
-        attack_btn = QtWidgets.QPushButton('Attack', self)
-        remove_btn = QtWidgets.QPushButton('-', self)
+        attack_btn = QPushButton('Attack', self)
+        remove_btn = QPushButton('-', self)
 
         attack_btn.resize(55, 30)
         attack_btn.move(1010, ypos-5)
