@@ -2,8 +2,12 @@
 
 import sys
 from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import QApplication, QPushButton, QLineEdit, QLabel
 from PyQt5.QtWidgets import QCheckBox, QPlainTextEdit
+
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
 
 import re
 from functools import partial
@@ -18,10 +22,52 @@ def d(sides):
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        wid = QtWidgets.QWidget(self)
+        self.setCentralWidget(wid)
+
+        # Layout setup
+        #outside = QHBoxLayout()
+        outside = QGridLayout()
+        wid.setLayout(outside)
+        self.attribute_layout = QVBoxLayout()
+        #saves_and_skills_holder = QVBoxLayout()
+        self.saves_layout = QGridLayout()
+        self.skills_layout = QGridLayout()
+        self.pass_percep_layout = QGridLayout()
+        #attacks_and_log_holder = QVBoxLayout()
+        self.attacks_layout = QGridLayout()
+        self.log_layout = QGridLayout()
+
+        #outside.addLayout(self.attribute_layout)
+        #outside.addLayout(saves_and_skills_holder)
+        #saves_and_skills_holder.addLayout(self.saves_layout)
+        #saves_and_skills_holder.addLayout(self.skills_layout)
+        #outside.addLayout(attacks_and_log_holder)
+        #attacks_and_log_holder.addLayout(self.attacks_layout)
+        #attacks_and_log_holder.addLayout(self.log_layout)
+
+        c1_size = 5
+        c2 = c1_size+1
+        c2_size = 3*c1_size
+        c3_start = c2+c2_size+1
+        c3_size = 2*c2_size
+        y = 24
+        outside.addLayout(self.attribute_layout,   1,    0,            y-2,    c1_size)
+        outside.addLayout(self.saves_layout,       0,    c2,           y//4,   c2_size)
+        outside.addLayout(self.skills_layout,      y//4, c2,           3*y//4, c2_size)
+        outside.addLayout(self.pass_percep_layout, y,    0,            1,      c1_size+c2_size)
+        outside.addLayout(self.attacks_layout,     0,    c3_start,     y//2,   c3_size)
+        outside.addLayout(self.log_layout,         y//2, c3_start,     y//2,   c3_size)
+
+        #self.saves_layout.setSpacing(0)
+        #self.skills_layout.setSpacing(0)
+        self.saves_layout.setVerticalSpacing(0)
+        self.skills_layout.setVerticalSpacing(0)
 
         # startx, starty, width, height
         self.setGeometry(50, 50, 1200, 950)
         self.setWindowTitle('Unnamed Character')
+
         #self.setWindowIcon(QtGui.QIcon(''))  # set icon
 
         save_action = QtWidgets.QAction('&Save Character', self)
@@ -167,21 +213,31 @@ class Window(QtWidgets.QMainWindow):
             # Create a text box for the attribute score
             textbox = QLineEdit(self)
             textbox.setText('10')
+            textbox.setAlignment(QtCore.Qt.AlignCenter)
+            # textbox.setMaximumSize(textbox.minimumSizeHint())
+            textbox.setMaximumWidth(30)
             self.attribute_score_input.append(textbox)
 
             # Create a label for the modifier
             label = QLabel('+0', self)
+            #label.setMaximumHeight(15)
             self.attribute_mod_labels.append(label)
+            #label.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+
+            self.attribute_layout.addWidget(btn)
+            self.attribute_layout.addWidget(label)
+            self.attribute_layout.addWidget(textbox)
+            self.attribute_layout.addSpacing(30)
 
             # Move and resize everything
-            label.resize(39, 20)
-            label.move(left_margin+50-26//2, i*large_spacing+top_margin+30)
+            #label.resize(39, 20)
+            #label.move(left_margin+50-26//2, i*large_spacing+top_margin+30)
 
-            textbox.resize(26, 20)
-            textbox.move(left_margin+50-26//2, i*large_spacing+top_margin+50)
+            #textbox.resize(26, 20)
+            #textbox.move(left_margin+50-26//2, i*large_spacing+top_margin+50)
 
-            btn.resize(100, 30)
-            btn.move(left_margin, i*large_spacing+top_margin)
+            #btn.resize(100, 30)
+            #btn.move(left_margin, i*large_spacing+top_margin)
 
             # Connect the button to the roll function
             # The partial function is just so I can pass a number in. There is
@@ -199,14 +255,20 @@ class Window(QtWidgets.QMainWindow):
         self.proficiency = 2
         self.prof_textbox = QLineEdit(self)
         self.prof_textbox.setText(str(self.proficiency))
+        self.prof_textbox.setAlignment(QtCore.Qt.AlignCenter)
         prof_label = QLabel('Proficiency Bonus', self)
 
-        # Move and resize proficiency things
-        prof_label.resize(125, 20)
-        prof_label.move(180, top_margin-30)
+        #self.prof_textbox.setMaximumSize(self.prof_textbox.minimumSizeHint())
+        self.prof_textbox.setMaximumWidth(20)
 
-        self.prof_textbox.resize(26, 20)
-        self.prof_textbox.move(150, top_margin-30)
+        # Move and resize proficiency things
+        self.saves_layout.addWidget(prof_label, 0, 1, 1, 2)
+        #prof_label.resize(125, 20)
+        #prof_label.move(180, top_margin-30)
+
+        self.saves_layout.addWidget(self.prof_textbox, 0, 0)
+        #self.prof_textbox.resize(26, 20)
+        #self.prof_textbox.move(150, top_margin-30)
 
         # Connect textbox to self.proficiency
         self.prof_textbox.editingFinished.connect(self.set_prof)
@@ -222,24 +284,31 @@ class Window(QtWidgets.QMainWindow):
         for i, name in enumerate(self.attribute_names):
             # Create button for rolling
             btn = QPushButton(name, self)
+            btn.setMaximumSize(btn.minimumSizeHint())
 
             # create label showing modifier for this save
             label = QLabel('+0', self)
+            label.setMaximumWidth(30)
             self.save_mod_labels.append(label)
 
             # create checkbox button for this save
             checkbox = QCheckBox(self)
+            checkbox.setMaximumWidth(30)
             self.save_checkbox.append(checkbox)
 
+            self.saves_layout.addWidget(checkbox, i+1, 0)
+            self.saves_layout.addWidget(label, i+1, 1)
+            self.saves_layout.addWidget(btn, i+1, 2)
+
             # Move and resize everything
-            label.resize(26, 30)
-            label.move(175, i*small_spacing+top_margin)
+            # label.resize(26, 30)
+            # label.move(175, i*small_spacing+top_margin)
 
-            checkbox.resize(26, 30)
-            checkbox.move(155, i*small_spacing+top_margin)
+            # checkbox.resize(26, 30)
+            # checkbox.move(155, i*small_spacing+top_margin)
 
-            btn.resize(100, 30)
-            btn.move(200, i*small_spacing+top_margin)
+            # btn.resize(100, 30)
+            # btn.move(200, i*small_spacing+top_margin)
 
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_save_prof, i))
@@ -273,21 +342,26 @@ class Window(QtWidgets.QMainWindow):
 
             # create label showing modifier for this save
             label = QLabel('+0', self)
+            label.setMaximumWidth(30)
             self.skill_mod_labels.append(label)
 
             # create checkbox button for this save
             checkbox = QCheckBox(self)
             self.skill_checkbox.append(checkbox)
 
+            self.skills_layout.addWidget(checkbox, i, 0)
+            self.skills_layout.addWidget(label, i, 1)
+            self.skills_layout.addWidget(btn, i, 2)
+
             # Move and resize everything
-            label.resize(26, 30)
-            label.move(175, i*small_spacing+300)
+            #label.resize(26, 30)
+            #label.move(175, i*small_spacing+300)
 
-            checkbox.resize(26, 30)
-            checkbox.move(155, i*small_spacing+300)
+            #checkbox.resize(26, 30)
+            #checkbox.move(155, i*small_spacing+300)
 
-            btn.resize(200, 30)
-            btn.move(200, i*small_spacing+300)
+            #btn.resize(200, 30)
+            #btn.move(200, i*small_spacing+300)
 
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_skill_prof, i))
@@ -299,16 +373,23 @@ class Window(QtWidgets.QMainWindow):
         # Passive Perception Section
         # ---------------------------------------------------------------------
         # Passive perception is just calculated and thus only uses labels
-        self.proficiency = 2
         self.passive_perception = QLabel('10', self)
-        passive_perception_label = QLabel('Passive\nPerception', self)
+        passive_perception_label = QLabel('Passive Perception', self)
 
-        # Move and resize proficiency things
-        passive_perception_label.resize(75, 40)
-        passive_perception_label.move(40, 700)
+        # Adding frames and stuff
+        self.passive_perception.setFrameStyle(QtWidgets.QFrame.Panel)
+        self.passive_perception.setLineWidth(2)
+        #self.passive_perception.setMaximumSize(self.passive_perception.minimumSizeHint())
+        self.passive_perception.setMaximumWidth(30)
 
-        self.passive_perception.resize(26, 20)
-        self.passive_perception.move(left_margin, 707)
+        # Move and resize passive perception things
+        self.pass_percep_layout.addWidget(passive_perception_label, 0, 1, 1, 3)
+        #passive_perception_label.resize(75, 40)
+        #passive_perception_label.move(40, 700)
+
+        self.pass_percep_layout.addWidget(self.passive_perception, 0, 0)
+        #self.passive_perception.resize(26, 20)
+        #self.passive_perception.move(left_margin, 707)
 
         # ---------------------------------------------------------------------
         # Attacks & Spellcasting Section
@@ -324,16 +405,19 @@ class Window(QtWidgets.QMainWindow):
         self.add_attack_btn = QPushButton('+', self)
 
         # Move and resize attack things
-        attacks_label.resize(160, 20)
-        attacks_label.move(550, top_margin-20)
+        self.attacks_layout.addWidget(attacks_label, 0, 0, 1, 4)
+        #attacks_label.resize(160, 20)
+        #attacks_label.move(550, top_margin-20)
 
         self.section_labels_pos = [450, 590, 730, 880]
         for i in range(4):
-            section_labels[i].resize(len(section_labels[i].text())*11, 20)
-            section_labels[i].move(self.section_labels_pos[i], top_margin+10)
+            self.attacks_layout.addWidget(section_labels[i], 1, i)
+            #section_labels[i].resize(len(section_labels[i].text())*11, 20)
+            #section_labels[i].move(self.section_labels_pos[i], top_margin+10)
 
-        self.add_attack_btn.resize(20, 20)
-        self.add_attack_btn.move(550, top_margin+40)
+        self.attacks_layout.addWidget(self.add_attack_btn, 2, 3)
+        #self.add_attack_btn.resize(20, 20)
+        #self.add_attack_btn.move(550, top_margin+40)
 
         self.add_attack_btn.clicked.connect(self.add_attack)
 
@@ -344,11 +428,13 @@ class Window(QtWidgets.QMainWindow):
         self.roll_log.setReadOnly(True)
         self.roll_input = QLineEdit(self)
 
-        self.roll_log.resize(700, 380)
-        self.roll_log.move(self.section_labels_pos[0], 500)
+        self.log_layout.addWidget(self.roll_log, 0, 0, 10, 4)
+        #self.roll_log.resize(700, 380)
+        #self.roll_log.move(self.section_labels_pos[0], 500)
 
-        self.roll_input.resize(700, 20)
-        self.roll_input.move(self.section_labels_pos[0], 500+380)
+        self.log_layout.addWidget(self.roll_input, 9, 0, 1, 4)
+        #self.roll_input.resize(700, 20)
+        #self.roll_input.move(self.section_labels_pos[0], 500+380)
 
         self.roll_input.returnPressed.connect(self.manual_input)
 
