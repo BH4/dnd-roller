@@ -397,29 +397,36 @@ class Window(QtWidgets.QMainWindow):
         self.attack_widget_list = []
         self.attack_list = []
         attacks_label = QLabel('Attacks & Spellcasting', self)
+        attacks_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
         section_labels = [QLabel('Name', self),
                           QLabel('Atk Bonus', self),
                           QLabel('Damage', self),
                           QLabel('Type', self)]
         self.add_attack_btn = QPushButton('+', self)
+        self.add_attack_btn.setMaximumWidth(30)
+        self.attacks_layout.addWidget(self.add_attack_btn, 1, 5)
+        #self.add_attack_btn.resize(20, 20)
+        #self.add_attack_btn.move(550, top_margin+40)
 
         # Move and resize attack things
-        self.attacks_layout.addWidget(attacks_label, 0, 0, 1, 4)
+        self.attacks_layout.addWidget(attacks_label, 0, 1)
         #attacks_label.resize(160, 20)
         #attacks_label.move(550, top_margin-20)
 
-        self.section_labels_pos = [450, 590, 730, 880]
+        # self.section_labels_pos = [450, 590, 730, 880]
         for i in range(4):
             self.attacks_layout.addWidget(section_labels[i], 1, i)
             #section_labels[i].resize(len(section_labels[i].text())*11, 20)
             #section_labels[i].move(self.section_labels_pos[i], top_margin+10)
 
-        self.attacks_layout.addWidget(self.add_attack_btn, 2, 3)
-        #self.add_attack_btn.resize(20, 20)
-        #self.add_attack_btn.move(550, top_margin+40)
-
         self.add_attack_btn.clicked.connect(self.add_attack)
+        self.num_attacks = 0
+
+        # Add invisible labels to keep from needing to resize existing widgets
+        spacer = QLabel(' ', self)
+        for i in range(2, 11):
+            self.attacks_layout.addWidget(spacer, i, 0)
 
         # ---------------------------------------------------------------------
         # Roll log Section
@@ -543,22 +550,20 @@ class Window(QtWidgets.QMainWindow):
         other rolls for damage.
         """
 
-        xpos = self.add_attack_btn.x()
-        ypos = self.add_attack_btn.y()
+        self.num_attacks += 1
+        # Force 9 attacks maximum so it looks good
+        if self.num_attacks == 9:
+            self.add_attack_btn.setVisible(False)
 
-        # move button down
-        self.add_attack_btn.move(xpos, ypos+40)
-
-        # Add all the text boxes
-        section_textbox_sizes = [125, 125, 125, 100]
 
         curr_attack_ind = len(self.attack_widget_list)
 
         row = []
         for i in range(4):
             section = QLineEdit(self)
-            section.resize(section_textbox_sizes[i], 20)
-            section.move(self.section_labels_pos[i], ypos)
+            self.attacks_layout.addWidget(section, self.num_attacks+1, i)
+            #section.resize(section_textbox_sizes[i], 20)
+            #section.move(self.section_labels_pos[i], ypos)
             section.setVisible(True)
 
             # Connect every section to the function that saves the info
@@ -568,14 +573,18 @@ class Window(QtWidgets.QMainWindow):
 
         # Add buttons
         attack_btn = QPushButton('Attack', self)
+        attack_btn.setMaximumWidth(80)
         remove_btn = QPushButton('-', self)
+        remove_btn.setMaximumWidth(30)
 
-        attack_btn.resize(55, 30)
-        attack_btn.move(1010, ypos-5)
+        self.attacks_layout.addWidget(attack_btn, self.num_attacks+1, 4)
+        #attack_btn.resize(55, 30)
+        #attack_btn.move(1010, ypos-5)
         attack_btn.setVisible(True)
 
-        remove_btn.resize(30, 30)
-        remove_btn.move(1085, ypos-5)
+        self.attacks_layout.addWidget(remove_btn, self.num_attacks+1, 5)
+        #remove_btn.resize(30, 30)
+        #remove_btn.move(1085, ypos-5)
         remove_btn.setVisible(True)
 
         attack_btn.clicked.connect(partial(self.attack_roll, curr_attack_ind))
@@ -592,6 +601,9 @@ class Window(QtWidgets.QMainWindow):
         Remove this attack from the lists, move all attacks below it up by
         40 units as well as the add attack button.
         """
+        self.num_attacks -= 1
+        self.add_attack_btn.setVisible(True)
+
         for w in self.attack_widget_list[i]:
             w.deleteLater()
 
@@ -599,8 +611,10 @@ class Window(QtWidgets.QMainWindow):
         self.attack_list = self.attack_list[:i]+self.attack_list[i+1:]
 
         for j in range(i, len(self.attack_widget_list)):
-            for w in self.attack_widget_list[j]:
-                w.move(w.x(), w.y()-40)
+            for col, w in enumerate(self.attack_widget_list[j]):
+                # w.move(w.x(), w.y()-40)
+                self.attacks_layout.removeWidget(w)
+                self.attacks_layout.addWidget(w, j+2, col)
 
             attack_btn = self.attack_widget_list[j][-2]
             remove_btn = self.attack_widget_list[j][-1]
@@ -609,9 +623,9 @@ class Window(QtWidgets.QMainWindow):
             attack_btn.clicked.connect(partial(self.attack_roll, j))
             remove_btn.clicked.connect(partial(self.remove_attack, j))
 
-        xpos = self.add_attack_btn.x()
-        ypos = self.add_attack_btn.y()
-        self.add_attack_btn.move(xpos, ypos-40)
+        # xpos = self.add_attack_btn.x()
+        # ypos = self.add_attack_btn.y()
+        # self.add_attack_btn.move(xpos, ypos-40)
 
     def attack_roll(self, attack_ind):
         """
