@@ -3,11 +3,10 @@
 import sys
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import QApplication, QPushButton, QLineEdit, QLabel
 from PyQt5.QtWidgets import QCheckBox, QPlainTextEdit
 
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
 
 import re
 from functools import partial
@@ -26,25 +25,14 @@ class Window(QtWidgets.QMainWindow):
         self.setCentralWidget(wid)
 
         # Layout setup
-        #outside = QHBoxLayout()
         outside = QGridLayout()
         wid.setLayout(outside)
         self.attribute_layout = QVBoxLayout()
-        #saves_and_skills_holder = QVBoxLayout()
         self.saves_layout = QGridLayout()
         self.skills_layout = QGridLayout()
         self.pass_percep_layout = QGridLayout()
-        #attacks_and_log_holder = QVBoxLayout()
         self.attacks_layout = QGridLayout()
         self.log_layout = QGridLayout()
-
-        #outside.addLayout(self.attribute_layout)
-        #outside.addLayout(saves_and_skills_holder)
-        #saves_and_skills_holder.addLayout(self.saves_layout)
-        #saves_and_skills_holder.addLayout(self.skills_layout)
-        #outside.addLayout(attacks_and_log_holder)
-        #attacks_and_log_holder.addLayout(self.attacks_layout)
-        #attacks_and_log_holder.addLayout(self.log_layout)
 
         c1_size = 5
         c2 = c1_size+1
@@ -59,16 +47,12 @@ class Window(QtWidgets.QMainWindow):
         outside.addLayout(self.attacks_layout,     0,    c3_start,     y//2,   c3_size)
         outside.addLayout(self.log_layout,         y//2, c3_start,     y//2,   c3_size)
 
-        #self.saves_layout.setSpacing(0)
-        #self.skills_layout.setSpacing(0)
         self.saves_layout.setVerticalSpacing(0)
         self.skills_layout.setVerticalSpacing(0)
 
         # startx, starty, width, height
         self.setGeometry(50, 50, 1200, 950)
         self.setWindowTitle('Unnamed Character')
-
-        #self.setWindowIcon(QtGui.QIcon(''))  # set icon
 
         save_action = QtWidgets.QAction('&Save Character', self)
         save_action.setShortcut('Ctrl+S')
@@ -127,7 +111,6 @@ class Window(QtWidgets.QMainWindow):
         self.close()
         self = Window()
 
-        #self.setup()
         self.setWindowTitle(name)
 
         with open(filename, 'r') as f:
@@ -152,7 +135,7 @@ class Window(QtWidgets.QMainWindow):
 
                 # Make sure to save these after entering the data
                 self.save_attack(len(self.attack_list)-1)
- 
+
         self.fix_textboxes_and_checkboxes(new_save_prof, new_skill_prof)
 
         self.recalculate()
@@ -162,7 +145,7 @@ class Window(QtWidgets.QMainWindow):
         Setup input and output systems for the gui as well as variables that
         save important information.
 
-        Variables relevant outside this function (anything besides static labels):
+        Variables relevant outside this function (anything dynamic):
         == For getting input:
         - self.attribute_score_input: text box input for attribute scores
         - self.prof_textbox: input for proficiency bonus
@@ -188,10 +171,6 @@ class Window(QtWidgets.QMainWindow):
         - self.skill_mods: integer array of actual skill modifiers
         - self.attack_list: last acceptable input for a custom attack
         """
-        left_margin = 10
-        top_margin = 75
-        small_spacing = 35
-        large_spacing = 100
 
         # ---------------------------------------------------------------------
         # Attribute Section
@@ -214,30 +193,17 @@ class Window(QtWidgets.QMainWindow):
             textbox = QLineEdit(self)
             textbox.setText('10')
             textbox.setAlignment(QtCore.Qt.AlignCenter)
-            # textbox.setMaximumSize(textbox.minimumSizeHint())
             textbox.setMaximumWidth(30)
             self.attribute_score_input.append(textbox)
 
             # Create a label for the modifier
             label = QLabel('+0', self)
-            #label.setMaximumHeight(15)
             self.attribute_mod_labels.append(label)
-            #label.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
 
             self.attribute_layout.addWidget(btn)
             self.attribute_layout.addWidget(label)
             self.attribute_layout.addWidget(textbox)
             self.attribute_layout.addSpacing(30)
-
-            # Move and resize everything
-            #label.resize(39, 20)
-            #label.move(left_margin+50-26//2, i*large_spacing+top_margin+30)
-
-            #textbox.resize(26, 20)
-            #textbox.move(left_margin+50-26//2, i*large_spacing+top_margin+50)
-
-            #btn.resize(100, 30)
-            #btn.move(left_margin, i*large_spacing+top_margin)
 
             # Connect the button to the roll function
             # The partial function is just so I can pass a number in. There is
@@ -258,17 +224,11 @@ class Window(QtWidgets.QMainWindow):
         self.prof_textbox.setAlignment(QtCore.Qt.AlignCenter)
         prof_label = QLabel('Proficiency Bonus', self)
 
-        #self.prof_textbox.setMaximumSize(self.prof_textbox.minimumSizeHint())
         self.prof_textbox.setMaximumWidth(20)
 
-        # Move and resize proficiency things
+        # Add and resize proficiency widgets
         self.saves_layout.addWidget(prof_label, 0, 1, 1, 2)
-        #prof_label.resize(125, 20)
-        #prof_label.move(180, top_margin-30)
-
         self.saves_layout.addWidget(self.prof_textbox, 0, 0)
-        #self.prof_textbox.resize(26, 20)
-        #self.prof_textbox.move(150, top_margin-30)
 
         # Connect textbox to self.proficiency
         self.prof_textbox.editingFinished.connect(self.set_prof)
@@ -300,16 +260,6 @@ class Window(QtWidgets.QMainWindow):
             self.saves_layout.addWidget(label, i+1, 1)
             self.saves_layout.addWidget(btn, i+1, 2)
 
-            # Move and resize everything
-            # label.resize(26, 30)
-            # label.move(175, i*small_spacing+top_margin)
-
-            # checkbox.resize(26, 30)
-            # checkbox.move(155, i*small_spacing+top_margin)
-
-            # btn.resize(100, 30)
-            # btn.move(200, i*small_spacing+top_margin)
-
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_save_prof, i))
 
@@ -332,7 +282,8 @@ class Window(QtWidgets.QMainWindow):
 
         self.skill_mod_labels = []
         self.skill_mods = [0]*num_skills
-        self.skill_prof = [False]*num_skills  # all buttons start off, flip when toggled
+        # All check boxes start false and flip when toggled
+        self.skill_prof = [False]*num_skills
         self.skill_checkbox = []
 
         for i, name in enumerate(self.skill_names):
@@ -353,16 +304,6 @@ class Window(QtWidgets.QMainWindow):
             self.skills_layout.addWidget(label, i, 1)
             self.skills_layout.addWidget(btn, i, 2)
 
-            # Move and resize everything
-            #label.resize(26, 30)
-            #label.move(175, i*small_spacing+300)
-
-            #checkbox.resize(26, 30)
-            #checkbox.move(155, i*small_spacing+300)
-
-            #btn.resize(200, 30)
-            #btn.move(200, i*small_spacing+300)
-
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_skill_prof, i))
 
@@ -379,17 +320,11 @@ class Window(QtWidgets.QMainWindow):
         # Adding frames and stuff
         self.passive_perception.setFrameStyle(QtWidgets.QFrame.Panel)
         self.passive_perception.setLineWidth(2)
-        #self.passive_perception.setMaximumSize(self.passive_perception.minimumSizeHint())
         self.passive_perception.setMaximumWidth(30)
 
-        # Move and resize passive perception things
+        # Add and resize passive perception widgets
         self.pass_percep_layout.addWidget(passive_perception_label, 0, 1, 1, 3)
-        #passive_perception_label.resize(75, 40)
-        #passive_perception_label.move(40, 700)
-
         self.pass_percep_layout.addWidget(self.passive_perception, 0, 0)
-        #self.passive_perception.resize(26, 20)
-        #self.passive_perception.move(left_margin, 707)
 
         # ---------------------------------------------------------------------
         # Attacks & Spellcasting Section
@@ -397,28 +332,22 @@ class Window(QtWidgets.QMainWindow):
         self.attack_widget_list = []
         self.attack_list = []
         attacks_label = QLabel('Attacks & Spellcasting', self)
-        attacks_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        attacks_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                    QtWidgets.QSizePolicy.Fixed)
 
         section_labels = [QLabel('Name', self),
                           QLabel('Atk Bonus', self),
                           QLabel('Damage', self),
                           QLabel('Type', self)]
         self.add_attack_btn = QPushButton('+', self)
-        self.add_attack_btn.setMaximumWidth(30)
         self.attacks_layout.addWidget(self.add_attack_btn, 1, 5)
-        #self.add_attack_btn.resize(20, 20)
-        #self.add_attack_btn.move(550, top_margin+40)
 
-        # Move and resize attack things
+        # Add and resize attack widgets
+        self.add_attack_btn.setMaximumWidth(30)
         self.attacks_layout.addWidget(attacks_label, 0, 1)
-        #attacks_label.resize(160, 20)
-        #attacks_label.move(550, top_margin-20)
 
-        # self.section_labels_pos = [450, 590, 730, 880]
         for i in range(4):
             self.attacks_layout.addWidget(section_labels[i], 1, i)
-            #section_labels[i].resize(len(section_labels[i].text())*11, 20)
-            #section_labels[i].move(self.section_labels_pos[i], top_margin+10)
 
         self.add_attack_btn.clicked.connect(self.add_attack)
         self.num_attacks = 0
@@ -436,12 +365,7 @@ class Window(QtWidgets.QMainWindow):
         self.roll_input = QLineEdit(self)
 
         self.log_layout.addWidget(self.roll_log, 0, 0, 10, 4)
-        #self.roll_log.resize(700, 380)
-        #self.roll_log.move(self.section_labels_pos[0], 500)
-
         self.log_layout.addWidget(self.roll_input, 9, 0, 1, 4)
-        #self.roll_input.resize(700, 20)
-        #self.roll_input.move(self.section_labels_pos[0], 500+380)
 
         self.roll_input.returnPressed.connect(self.manual_input)
 
@@ -555,19 +479,17 @@ class Window(QtWidgets.QMainWindow):
         if self.num_attacks == 9:
             self.add_attack_btn.setVisible(False)
 
-
         curr_attack_ind = len(self.attack_widget_list)
 
         row = []
         for i in range(4):
             section = QLineEdit(self)
             self.attacks_layout.addWidget(section, self.num_attacks+1, i)
-            #section.resize(section_textbox_sizes[i], 20)
-            #section.move(self.section_labels_pos[i], ypos)
             section.setVisible(True)
 
             # Connect every section to the function that saves the info
-            section.editingFinished.connect(partial(self.save_attack, curr_attack_ind))
+            section.editingFinished.connect(partial(self.save_attack,
+                                                    curr_attack_ind))
 
             row.append(section)
 
@@ -578,23 +500,21 @@ class Window(QtWidgets.QMainWindow):
         remove_btn.setMaximumWidth(30)
 
         self.attacks_layout.addWidget(attack_btn, self.num_attacks+1, 4)
-        #attack_btn.resize(55, 30)
-        #attack_btn.move(1010, ypos-5)
         attack_btn.setVisible(True)
 
         self.attacks_layout.addWidget(remove_btn, self.num_attacks+1, 5)
-        #remove_btn.resize(30, 30)
-        #remove_btn.move(1085, ypos-5)
         remove_btn.setVisible(True)
 
         attack_btn.clicked.connect(partial(self.attack_roll, curr_attack_ind))
-        remove_btn.clicked.connect(partial(self.remove_attack, curr_attack_ind))
+        remove_btn.clicked.connect(partial(self.remove_attack,
+                                           curr_attack_ind))
 
         row.append(attack_btn)
         row.append(remove_btn)
 
         self.attack_widget_list.append(row)
-        self.attack_list.append(['', '', '', ''])  # List to be filled when the row is used
+        # List to be filled when the row is used
+        self.attack_list.append(['', '', '', ''])
 
     def remove_attack(self, i):
         """
@@ -607,12 +527,12 @@ class Window(QtWidgets.QMainWindow):
         for w in self.attack_widget_list[i]:
             w.deleteLater()
 
-        self.attack_widget_list = self.attack_widget_list[:i]+self.attack_widget_list[i+1:]
+        self.attack_widget_list = (self.attack_widget_list[:i] +
+                                   self.attack_widget_list[i+1:])
         self.attack_list = self.attack_list[:i]+self.attack_list[i+1:]
 
         for j in range(i, len(self.attack_widget_list)):
             for col, w in enumerate(self.attack_widget_list[j]):
-                # w.move(w.x(), w.y()-40)
                 self.attacks_layout.removeWidget(w)
                 self.attacks_layout.addWidget(w, j+2, col)
 
@@ -622,10 +542,6 @@ class Window(QtWidgets.QMainWindow):
             remove_btn.clicked.disconnect()
             attack_btn.clicked.connect(partial(self.attack_roll, j))
             remove_btn.clicked.connect(partial(self.remove_attack, j))
-
-        # xpos = self.add_attack_btn.x()
-        # ypos = self.add_attack_btn.y()
-        # self.add_attack_btn.move(xpos, ypos-40)
 
     def attack_roll(self, attack_ind):
         """
@@ -638,7 +554,7 @@ class Window(QtWidgets.QMainWindow):
         attack = self.attack_list[attack_ind]
 
         if len(attack[1]) > 0:
-            # There usually isn't dice with an attack bonus, but I will add it in
+            # There usually isn't dice with an attack bonus, but I will add it
             # anyway. Can't hurt anything.
             dice, mod = self.evaluate(attack[1])
             atk_bonus = dice+mod
@@ -661,7 +577,8 @@ class Window(QtWidgets.QMainWindow):
         self.write('{} damage roll'.format(attack[0]))
         if crit:
             damage_dice2, _ = self.evaluate(attack[2])
-            self.write('Critical damage: {}+{}'.format(damage_value, damage_dice2))
+            self.write('Critical damage: {}+{}'.format(damage_value,
+                                                       damage_dice2))
         else:
             self.write('Damage: {}'.format(damage_value))
         self.write('')
@@ -709,7 +626,7 @@ class Window(QtWidgets.QMainWindow):
         A list has already been added to self.attack_list in order to keep
         the place saved.
         Name can be anything
-        attack bonus needs to be interpretable as a modifier (technically could include dice roll how I have checked it)
+        attack bonus needs to be interpretable as a modifier (dice roll is ok)
         damage roll needs to be interpretable as a dice roll e.g. 3d10+5+str
         type can be anything
         """
