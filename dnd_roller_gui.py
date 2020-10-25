@@ -284,28 +284,38 @@ class Window(QtWidgets.QMainWindow):
         self.skill_mods = [0]*num_skills
         # All check boxes start false and flip when toggled
         self.skill_prof = [False]*num_skills
+        self.expertise_prof = [False]*num_skills
         self.skill_checkbox = []
+        self.expertise_checkbox = []
 
         for i, name in enumerate(self.skill_names):
             # Create button for rolling
             short_att = self.attribute_short[self.skill_type[i]]
             btn = QPushButton('{} ({})'.format(name, short_att), self)
 
-            # create label showing modifier for this save
+            # create label showing modifier for this skill
             label = QLabel('+0', self)
             label.setMaximumWidth(30)
             self.skill_mod_labels.append(label)
 
-            # create checkbox button for this save
+            # create checkbox button for this skill
             checkbox = QCheckBox(self)
             self.skill_checkbox.append(checkbox)
 
-            self.skills_layout.addWidget(checkbox, i, 0)
-            self.skills_layout.addWidget(label, i, 1)
-            self.skills_layout.addWidget(btn, i, 2)
+            # create checkbox button for expertise in this skill
+            expertise = QCheckBox(self)
+            self.expertise_checkbox.append(expertise)
+
+            self.skills_layout.addWidget(expertise, i, 0)
+            self.skills_layout.addWidget(checkbox, i, 1)
+            self.skills_layout.addWidget(label, i, 2)
+            self.skills_layout.addWidget(btn, i, 3)
 
             # Connect checkbox button to proficiency
             checkbox.stateChanged.connect(partial(self.set_skill_prof, i))
+
+            # Connect expertise button to expertise proficiency
+            expertise.stateChanged.connect(partial(self.set_expertise_prof, i))
 
             # Connect the skill roll button to the skill roll function
             btn.clicked.connect(partial(self.skill_roll, i))
@@ -618,6 +628,14 @@ class Window(QtWidgets.QMainWindow):
 
     def set_skill_prof(self, i):
         self.skill_prof[i] = not self.skill_prof[i]
+        if not self.skill_prof[i]:
+            self.expertise_checkbox[i].setChecked(False)
+        self.recalculate()
+
+    def set_expertise_prof(self, i):
+        self.expertise_prof[i] = not self.expertise_prof[i]
+        if self.expertise_prof[i]:
+            self.skill_checkbox[i].setChecked(True)
         self.recalculate()
 
     def save_attack(self, i):
@@ -661,6 +679,8 @@ class Window(QtWidgets.QMainWindow):
             mod = self.attribute_mods[att_ind]
             if self.skill_prof[i]:
                 mod += self.proficiency
+                if self.expertise_prof[i]:
+                    mod += self.proficiency
             self.skill_mods[i] = mod
 
         passive_wis = str(10+self.skill_mods[11])
